@@ -547,6 +547,7 @@ declare module "knex/types/tables" {
     >;
     [TableName.ProjectKeys]: KnexOriginal.CompositeTableType<TProjectKeys, TProjectKeysInsert, TProjectKeysUpdate>;
     [TableName.Secret]: KnexOriginal.CompositeTableType<TSecrets, TSecretsInsert, TSecretsUpdate>;
+    [TableName.UserSecrets]: KnexOriginal.CompositeTableType<TUserSecrets, TUserSecretsInsert, TUserSecretsUpdate>;
     [TableName.SecretReference]: KnexOriginal.CompositeTableType<
       TSecretReferences,
       TSecretReferencesInsert,

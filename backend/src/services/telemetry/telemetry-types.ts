@@ -2,6 +2,7 @@ export enum PostHogEventTypes {
   SecretPush = "secrets pushed",
   SecretPulled = "secrets pulled",
   SecretCreated = "secrets added",
+  UserSecretCreated = "user secrets added",
   SecretUpdated = "secrets modified",
   SecretDeleted = "secrets deleted",
   AdminInit = "admin initialization",

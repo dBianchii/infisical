@@ -57,6 +57,7 @@ export enum EventType {
   GET_SECRET = "get-secret",
   REVEAL_SECRET = "reveal-secret",
   CREATE_SECRET = "create-secret",
+  CREATE_USER_SECRET = "create-user-secret",
   CREATE_SECRETS = "create-secrets",
   UPDATE_SECRET = "update-secret",
   UPDATE_SECRETS = "update-secrets",
