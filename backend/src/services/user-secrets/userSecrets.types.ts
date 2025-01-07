@@ -5,19 +5,24 @@ type LoginType = {
   userName: string;
   password: string;
 };
-type CreditCard = {
+type CreditCardType = {
   cardNumer: string;
   expiryDate: string;
   CVV: string;
 };
-type SecureNote = {
+type SecureNoteType = {
   title: string;
   content: string;
 };
 
-type UserSecretData = LoginType | CreditCard | SecureNote;
+type UserSecretData = LoginType | CreditCardType | SecureNoteType;
+
+export type TCreateUserSecretRawDTO = TProjectPermission & {
+  type: UserSecretType;
+  jsonData: UserSecretData;
+};
 
 export type TCreateUserSecretDTO = TProjectPermission & {
   type: UserSecretType;
-  data: UserSecretData;
+  jsonDataCiphertext: string;
 };
