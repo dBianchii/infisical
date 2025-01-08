@@ -16,13 +16,14 @@ function luhnCheck(cardNumber: string): boolean {
 }
 
 export const ZLoginSecretType = z.object({
-  userName: z.string(),
-  password: z.string()
+  userName: z.string().min(1),
+  password: z.string().min(1)
 });
 
 export const ZCardSecretType = z.object({
   cardNumber: z
     .string()
+    .regex(/^\d+$/, "Card number must contain only numbers")
     .regex(/^\d{13,19}$/, "Card number must be between 13 to 19 digits")
     .refine(luhnCheck, "Card number is invalid"),
   expiryDate: z

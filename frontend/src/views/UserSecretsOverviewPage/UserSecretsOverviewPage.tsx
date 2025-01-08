@@ -15,12 +15,12 @@ import {
   IconButton,
   Modal,
   ModalContent,
+  Pagination,
   Table,
   TableContainer,
   TableSkeleton,
   TBody,
   Td,
-  TFoot,
   Th,
   THead,
   Tooltip,
@@ -38,6 +38,7 @@ import CreateUserSecretForm from "./components/CreateUserSecretForm";
 import EditUserSecretForm from "./components/EditUserSecretForm";
 import { SelectionPanel } from "./components/SelectionPanel";
 import { UserSecretOverviewTableRow } from "./components/UserSecretOverViewTableRow";
+import { UserSecretsTableResourceCount } from "./components/UserSecretsTableResourceCount";
 import { userSecretTypeToIcon } from "./utils";
 
 const useSelectedEntries = () => {
@@ -84,17 +85,15 @@ export const SecretOverviewPage = () => {
   const { currentOrg } = useOrganization();
   const workspaceId = currentWorkspace?.id as string;
 
-  // const [filter, setFilter] = useState<Filter>(DEFAULT_FILTER_STATE);
-
   const {
     offset,
     limit,
     orderDirection,
     setOrderDirection,
-    // setPage,
-    // perPage,
-    // page,
-    // setPerPage,
+    setPage,
+    perPage,
+    page,
+    setPerPage,
     orderBy
   } = usePagination<DashboardUserSecretsOrderBy>(DashboardUserSecretsOrderBy.ItemName);
 
@@ -156,6 +155,9 @@ export const SecretOverviewPage = () => {
           <div className="flex w-full items-baseline justify-between">
             <div className="mt-6">
               <p className="text-3xl font-semibold text-bunker-100">User Secrets Overview</p>
+              <p className="text-md text-bunker-300">
+                Manage your user secrets, such as web logins, credit cards and secure notes.
+              </p>
             </div>
           </div>
           <div className="flex items-center justify-between">
@@ -316,18 +318,19 @@ export const SecretOverviewPage = () => {
                   />
                 ))}
               </TBody>
-              <TFoot>
-                <Tr className="sticky bottom-0 z-10 border-0 bg-mineshaft-800">
-                  <Td className="sticky left-0 z-10 border-0 bg-mineshaft-800 p-0">
-                    <div
-                      className="w-full border-t border-r border-mineshaft-600"
-                      style={{ height: "45px" }}
-                    />
-                  </Td>
-                </Tr>
-              </TFoot>
             </Table>
           </TableContainer>
+          {!isOverviewLoading && (totalSecretCount ?? 0) > 0 && (
+            <Pagination
+              startAdornment={<UserSecretsTableResourceCount secretCount={totalSecretCount} />}
+              className="rounded-b-md border-t border-solid border-t-mineshaft-600"
+              count={totalSecretCount ?? 0}
+              page={page}
+              perPage={perPage}
+              onChangePage={(newPage) => setPage(newPage)}
+              onChangePerPage={(newPerPage) => setPerPage(newPerPage)}
+            />
+          )}
         </div>
       </div>
       <Modal

@@ -138,7 +138,14 @@ export const registerProjectRouter = async (server: FastifyZodProvider) => {
           .default("false")
           .transform((value) => value === "true"),
         type: z
-          .enum([ProjectType.SecretManager, ProjectType.KMS, ProjectType.CertificateManager, ProjectType.SSH, "all"])
+          .enum([
+            ProjectType.SecretManager,
+            ProjectType.KMS,
+            ProjectType.CertificateManager,
+            ProjectType.SSH,
+            ProjectType.UserSecrets,
+            "all"
+          ])
           .optional()
       }),
       response: {

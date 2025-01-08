@@ -75,6 +75,7 @@ export default function CreateUserSecretForm({ onClose, type }: Props) {
         render={({ field }) => (
           <FormControl
             label="Item name"
+            isRequired
             isError={Boolean(errors?.itemName)}
             errorText={errors?.itemName?.message}
           >

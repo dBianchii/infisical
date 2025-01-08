@@ -39,6 +39,7 @@ function LoginFormContent({ control, errors }: FormProps<typeof ZLoginSecretType
         render={({ field }) => (
           <FormControl
             label="Password"
+            isRequired
             isError={Boolean(errors?.password)}
             errorText={errors?.password?.message}
           >
