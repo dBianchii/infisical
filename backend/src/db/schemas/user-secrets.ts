@@ -11,7 +11,7 @@ import { TImmutableDBKeys } from "./models";
 
 export const UserSecretsSchema = z.object({
   id: z.string().uuid(),
-  itemName: z.string().optional(),
+  itemName: z.string(),
   type: z.string().default("login"),
   encryptedJSONData: zodBuffer,
   userId: z.string().uuid().nullable().optional(),

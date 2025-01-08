@@ -21,7 +21,6 @@ export const fetchProjectUserSecretsOverview = async ({
       params
     }
   );
-
   return data;
 };
 

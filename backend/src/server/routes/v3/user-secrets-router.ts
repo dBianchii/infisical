@@ -56,6 +56,9 @@ export const registerUserSecretsRouter = async (server: FastifyZodProvider) => {
     },
     onRequest: verifyAuth([AuthMode.JWT, AuthMode.API_KEY, AuthMode.SERVICE_TOKEN, AuthMode.IDENTITY_ACCESS_TOKEN]),
     handler: async (req) => {
+      const { shouldUseSecretV2Bridge } = await server.services.projectBot.getBotKey(req.body.workspaceId);
+      // prevent older projects from accessing endpoint
+      if (!shouldUseSecretV2Bridge) throw new BadRequestError({ message: "Project version not supported" });
       const secret = await server.services.userSecrets.createUserSecretRaw({
         actorId: req.permission.id,
         actor: req.permission.type,

@@ -12,7 +12,6 @@ import {
   ZSecureNoteSecretType
 } from "@app/hooks/api/userSecrets/schemas";
 import { UserSecretRaw, UserSecretType } from "@app/hooks/api/userSecrets/types";
-import { usePopUp } from "@app/hooks/usePopUp";
 
 import { userSecretTypeToInnerFormContent } from "./UserSecretForm";
 
@@ -32,7 +31,6 @@ type Props = {
   userSecret: UserSecretRaw;
 };
 export default function EditUserSecretForm({ onClose, userSecret }: Props) {
-  const { handlePopUpClose } = usePopUp(["editUserSecret"] as const);
   const { mutateAsync: updateUserSecret } = useUpdateUserSecret();
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id || "";
@@ -75,18 +73,18 @@ export default function EditUserSecretForm({ onClose, userSecret }: Props) {
         type: userSecret.type,
         workspaceId
       });
-      handlePopUpClose("editUserSecret");
+      onClose();
       reset();
 
       createNotification({
         type: "success",
-        text: "Successfully created secret"
+        text: "Successfully edited secret"
       });
     } catch (error) {
       console.log(error);
       createNotification({
         type: "error",
-        text: "Failed to create secret"
+        text: "Failed to edit secret"
       });
     }
   };
@@ -111,7 +109,7 @@ export default function EditUserSecretForm({ onClose, userSecret }: Props) {
       <InnerFormContent control={control as any} errors={errors} />
       <div className="mt-7 flex items-center">
         <Button isDisabled={isSubmitting} isLoading={isSubmitting} className="mr-4" type="submit">
-          Create Secret
+          Edit Secret
         </Button>
         <Button onClick={onClose} variant="plain" colorSchema="secondary">
           Cancel

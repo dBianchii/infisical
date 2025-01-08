@@ -12,7 +12,6 @@ import {
   ZSecureNoteSecretType
 } from "@app/hooks/api/userSecrets/schemas";
 import { UserSecretType } from "@app/hooks/api/userSecrets/types";
-import { usePopUp } from "@app/hooks/usePopUp";
 
 import { userSecretTypeToInnerFormContent } from "./UserSecretForm";
 
@@ -31,7 +30,6 @@ type Props = {
   type: UserSecretType;
 };
 export default function CreateUserSecretForm({ onClose, type }: Props) {
-  const { handlePopUpClose } = usePopUp(["addUserSecret"] as const);
   const { mutateAsync: createUserSecret } = useCreateUserSecret();
   const { currentWorkspace } = useWorkspace();
   const workspaceId = currentWorkspace?.id || "";
@@ -51,7 +49,7 @@ export default function CreateUserSecretForm({ onClose, type }: Props) {
         type,
         workspaceId
       });
-      handlePopUpClose("addUserSecret");
+      onClose();
       reset();
 
       createNotification({

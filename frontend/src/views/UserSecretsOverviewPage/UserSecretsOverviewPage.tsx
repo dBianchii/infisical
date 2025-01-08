@@ -339,7 +339,6 @@ export const SecretOverviewPage = () => {
           bodyClassName="overflow-visible"
           title="Create User Secret"
           subTitle="Create your user secret"
-          onPointerDownOutside={(e) => e.preventDefault()}
         >
           <CreateUserSecretForm
             onClose={() => handlePopUpClose("addUserSecret")}
@@ -355,9 +354,8 @@ export const SecretOverviewPage = () => {
           <ModalContent
             className="max-h-[80vh]"
             bodyClassName="overflow-visible"
-            title="Create User Secret"
-            subTitle="Create your user secret"
-            onPointerDownOutside={(e) => e.preventDefault()}
+            title="Edit user Secret"
+            subTitle="Edit your user secret"
           >
             <EditUserSecretForm
               userSecret={currentlyEditing}

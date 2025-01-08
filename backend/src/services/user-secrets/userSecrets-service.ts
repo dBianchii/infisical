@@ -235,11 +235,11 @@ export const userSecretsServiceFactory = ({
 
       return {
         id: secret.id,
+        decryptedJSONData,
         itemName: secret.itemName,
-        createdAt: secret.createdAt,
-        updatedAt: secret.updatedAt,
         type: secret.type as UserSecretType,
-        decryptedJSONData
+        createdAt: secret.createdAt,
+        updatedAt: secret.updatedAt
       };
     }
 

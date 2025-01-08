@@ -89,8 +89,8 @@ function CreditCardFormContent({ control, errors }: FormProps<typeof ZCardSecret
           >
             <DatePicker
               showTimePicker={false}
-              value={field.value}
-              onChange={field.onChange}
+              value={field.value?.isWellFormed() ? new Date(field.value) : undefined}
+              onChange={(date) => field.onChange(date?.toISOString())}
               dateFormat="P"
               popUpProps={{
                 open,

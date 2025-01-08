@@ -19,13 +19,13 @@ type UserSecretJSONData = LoginType | CreditCardType | SecureNoteType;
 export type TCreateUserSecretRawDTO = TProjectPermission & {
   type: UserSecretType;
   decryptedJSONData: UserSecretJSONData;
-  itemName: string | undefined;
+  itemName: string;
 };
 
 export type TCreateUserSecretDTO = TProjectPermission & {
   type: UserSecretType;
   jsonDataCiphertext: Buffer;
-  itemName: string | undefined;
+  itemName: string;
 };
 
 export type TDeleteUserSecretsRawDTO = TProjectPermission & {
