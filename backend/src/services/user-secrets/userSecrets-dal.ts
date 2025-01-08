@@ -1,5 +1,4 @@
 import { Knex } from "knex";
-import { validate as uuidValidate } from "uuid";
 
 import { TDbClient } from "@app/db";
 import { TableName } from "@app/db/schemas";
@@ -14,13 +13,10 @@ export type TSecretDALFactory = ReturnType<typeof userSecretsDALFactory>;
 export const userSecretsDALFactory = (db: TDbClient) => {
   const secretOrm = ormify(db, TableName.UserSecrets);
 
-  const countSecrets = async (userId?: string, tx?: Knex) => {
+  const countSecrets = async ({ userId, projectId }: { userId: string; projectId: string }, tx?: Knex) => {
     try {
-      const query = (tx || db.replicaNode())(TableName.UserSecrets)
-        .where((bd) => {
-          void bd.whereNull("userId").orWhere({ userId: userId || null });
-        })
-        .countDistinct("id");
+      const query = (tx || db.replicaNode())(TableName.UserSecrets).where({ userId, projectId }).countDistinct("id");
+
       const secrets = await query;
 
       return Number(secrets[0]?.count ?? 0);
@@ -30,7 +26,13 @@ export const userSecretsDALFactory = (db: TDbClient) => {
   };
 
   const findSecrets = async (
-    userId?: string,
+    {
+      userId,
+      projectId
+    }: {
+      userId: string;
+      projectId: string;
+    },
     filters?: {
       limit?: number;
       offset?: number;
@@ -40,16 +42,8 @@ export const userSecretsDALFactory = (db: TDbClient) => {
     tx?: Knex
   ) => {
     try {
-      // check if not uui then userId id is null (corner case because service token's ID is not UUI in effort to keep backwards compatibility from mongo)
-      if (userId && !uuidValidate(userId)) {
-        // eslint-disable-next-line no-param-reassign
-        userId = undefined;
-      }
-
       const query = (tx || db.replicaNode())(TableName.UserSecrets)
-        .where((bd) => {
-          void bd.whereNull(`${TableName.UserSecrets}.userId`).orWhere({ userId: userId || null });
-        })
+        .where({ userId, projectId })
         .select(
           selectAllTableCols(TableName.UserSecrets),
           db.raw(`DENSE_RANK() OVER (ORDER BY "itemName" ${filters?.orderDirection ?? OrderByDirection.ASC}) as rank`)

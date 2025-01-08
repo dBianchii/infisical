@@ -13,8 +13,8 @@ export async function up(knex: Knex): Promise<void> {
       t.binary("encryptedJSONData").notNullable();
       t.uuid("userId");
       t.foreign("userId").references("id").inTable(TableName.Users).onDelete("CASCADE");
-      // t.uuid("folderId").notNullable(); //TODO: Folders ?
-      // t.foreign("folderId").references("id").inTable(TableName.SecretFolder).onDelete("CASCADE");
+      t.string("projectId").notNullable();
+      t.foreign("projectId").references("id").inTable(TableName.Project).onDelete("CASCADE");
       t.timestamps(true, true, true);
       t.index(["userId"]);
     });

@@ -51,21 +51,12 @@ export const userSecretsServiceFactory = ({
     );
     ForbidOnInvalidProjectType(ProjectType.UserSecrets);
 
-    // TODO: Permissions.
-    // ForbiddenError.from(permission).throwUnlessCan(
-    //   ProjectPermissionActions.Create,
-    //   subject(ProjectPermissionSub.UserSecrets, {
-    //     environment,
-    //     secretPath,
-    //     secretName,
-    //     secretTags: tags?.map((el) => el.slug)
-    //   })
-    // );
     await projectDAL.checkProjectUpgradeStatus(projectId);
 
     const { jsonDataCiphertext, type, itemName } = inputSecret;
     const secret = await userSecretsDAL.create({
       encryptedJSONData: jsonDataCiphertext,
+      projectId,
       type,
       userId: actorId,
       itemName
@@ -74,24 +65,12 @@ export const userSecretsServiceFactory = ({
     return secret;
   };
 
-  const $deleteManyUserSecrets = async ({ secretIds, projectId }: TDeleteBulkUserSecretsDTO) => {
-    // TODO: Permissions
-    // const { permission, ForbidOnInvalidProjectType } = await permissionService.getProjectPermission(
-    //   actor,
-    //   actorId,
-    //   projectId,
-    //   actorAuthMethod,
-    //   actorOrgId
-    // );
-    // ForbidOnInvalidProjectType(ProjectType.SecretManager);
-    // ForbiddenError.from(permission).throwUnlessCan(
-    //   ProjectPermissionActions.Delete,
-    //   subject(ProjectPermissionSub.Secrets, { environment, secretPath: path })
-    // );
-
+  const $deleteManyUserSecrets = async ({ secretIds, projectId, actorId }: TDeleteBulkUserSecretsDTO) => {
     await projectDAL.checkProjectUpgradeStatus(projectId);
 
     const secretsDeleted = await userSecretsDAL.delete({
+      projectId,
+      userId: actorId,
       $in: {
         id: secretIds
       }
@@ -118,19 +97,9 @@ export const userSecretsServiceFactory = ({
     );
     ForbidOnInvalidProjectType(ProjectType.UserSecrets);
 
-    // TODO: Permissions
-    // ForbiddenError.from(permission).throwUnlessCan(
-    //   ProjectPermissionActions.Edit,
-    //   subject(ProjectPermissionSub.Secrets, {
-    //     environment,
-    //     secretPath,
-    //     secretName: inputSecret.secretName,
-    //     secretTags: secret.tags.map((el) => el.slug)
-    //   })
-    // );
-
     await userSecretsDAL.update(
       {
+        projectId,
         userId: actorId,
         id: secretId
       },
@@ -179,17 +148,7 @@ export const userSecretsServiceFactory = ({
         name: "PaginationNotSupportedError"
       });
 
-    // TODO: Permissions
-    // const { permission } = await permissionService.getProjectPermission(
-    //   actor,
-    //   actorId,
-    //   projectId,
-    //   actorAuthMethod,
-    //   actorOrgId
-    // );
-    // ForbiddenError.from(permission).throwUnlessCan(ProjectPermissionActions.Read, ProjectPermissionSub.Secrets);
-
-    const count = await userSecretsDAL.countSecrets(actorId);
+    const count = await userSecretsDAL.countSecrets({ userId: actorId, projectId });
 
     return count;
   };
@@ -202,22 +161,15 @@ export const userSecretsServiceFactory = ({
     limit,
     offset
   }: TGetUserSecretsRawDTO) => {
-    // TODO: Permissions
-    // const { permission } = await permissionService.getProjectPermission(
-    //   actor,
-    //   actorId,
-    //   projectId,
-    //   actorAuthMethod,
-    //   actorOrgId
-    // );
-    // ForbiddenError.from(permission).throwUnlessCan(ProjectPermissionActions.Read, ProjectPermissionSub.Secrets);
-
-    const secrets = await userSecretsDAL.findSecrets(actorId, {
-      limit,
-      offset,
-      orderBy,
-      orderDirection
-    });
+    const secrets = await userSecretsDAL.findSecrets(
+      { userId: actorId, projectId },
+      {
+        limit,
+        offset,
+        orderBy,
+        orderDirection
+      }
+    );
 
     const { decryptor: secretManagerDecryptor } = await kmsService.createCipherPairWithDataKey({
       type: KmsDataKey.SecretManager,
