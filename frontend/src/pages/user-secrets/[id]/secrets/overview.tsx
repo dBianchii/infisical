@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import Head from "next/head";
 
-import { SecretOverviewPage } from "@app/views/SecretOverviewPage";
+import { SecretOverviewPage } from "@app/views/UserSecretsOverviewPage";
 
 const Dashboard = () => {
   const { t } = useTranslation();

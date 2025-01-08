@@ -14,6 +14,7 @@ export type DatePickerProps = Omit<DayPickerProps, "selected"> & {
   onChange: (date?: Date) => void;
   popUpProps: PopoverProps;
   popUpContentProps: PopoverContentProps;
+  showTimePicker?: boolean;
   dateFormat?: "PPP" | "PP" | "P"; // extend as needed
 };
 
@@ -24,6 +25,7 @@ export const DatePicker = ({
   popUpProps,
   popUpContentProps,
   dateFormat = "PPP",
+  showTimePicker = true,
   ...props
 }: DatePickerProps) => {
   const [timeValue, setTimeValue] = useState<string>(value ? format(value, "HH:mm") : "00:00");
@@ -51,22 +53,27 @@ export const DatePicker = ({
     onChange(newDate);
   };
 
+  const emptyValueText = showTimePicker ? "Pick a date and time" : "Pick a date";
+
   return (
     <Popover {...popUpProps}>
       <PopoverTrigger asChild>
         <Button variant="outline_bg" leftIcon={<FontAwesomeIcon icon={faCalendar} />}>
-          {value ? format(value, dateFormat) : "Pick a date and time"}
+          {value ? format(value, dateFormat) : emptyValueText}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-fit p-2" {...popUpContentProps}>
-        <div className="mx-4 my-4">
-          <Input
-            type="time"
-            value={timeValue}
-            onChange={handleTimeChange}
-            className="bg-mineshaft-700 text-white [color-scheme:dark]"
-          />
-        </div>
+        {showTimePicker && (
+          <div className="mx-4 my-4">
+            <Input
+              type="time"
+              value={timeValue}
+              onChange={handleTimeChange}
+              className="bg-mineshaft-700 text-white [color-scheme:dark]"
+            />
+          </div>
+        )}
+
         <DayPicker
           {...props}
           mode="single"

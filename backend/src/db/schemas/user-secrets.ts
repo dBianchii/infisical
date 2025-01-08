@@ -5,12 +5,15 @@
 
 import { z } from "zod";
 
+import { zodBuffer } from "@app/lib/zod";
+
 import { TImmutableDBKeys } from "./models";
 
 export const UserSecretsSchema = z.object({
   id: z.string().uuid(),
+  itemName: z.string().optional(),
   type: z.string().default("login"),
-  encryptedJSONData: z.unknown(),
+  encryptedJSONData: zodBuffer,
   userId: z.string().uuid().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date()

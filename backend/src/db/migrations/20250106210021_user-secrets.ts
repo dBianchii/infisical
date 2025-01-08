@@ -8,8 +8,9 @@ export async function up(knex: Knex): Promise<void> {
   if (!doesUserSecretTableExist) {
     await knex.schema.createTable(TableName.UserSecrets, (t) => {
       t.uuid("id", { primaryKey: true }).defaultTo(knex.fn.uuid());
+      t.string("itemName").notNullable();
       t.string("type").notNullable().defaultTo(UserSecretType.Login);
-      t.jsonb("encryptedJSONData").notNullable();
+      t.binary("encryptedJSONData").notNullable();
       t.uuid("userId");
       t.foreign("userId").references("id").inTable(TableName.Users).onDelete("CASCADE");
       // t.uuid("folderId").notNullable(); //TODO: Folders ?

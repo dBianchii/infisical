@@ -311,6 +311,13 @@ interface CreateSecretEvent {
   };
 }
 
+interface CreateUserSecretEvent {
+  type: EventType.CREATE_USER_SECRET;
+  metadata: {
+    secretId: string;
+  };
+}
+
 interface CreateSecretBatchEvent {
   type: EventType.CREATE_SECRETS;
   metadata: {
@@ -1912,6 +1919,7 @@ export type Event =
   | GetSecretsEvent
   | GetSecretEvent
   | CreateSecretEvent
+  | CreateUserSecretEvent
   | CreateSecretBatchEvent
   | UpdateSecretEvent
   | UpdateSecretBatchEvent

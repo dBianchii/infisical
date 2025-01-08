@@ -1,18 +1,27 @@
-import { ProjectType } from "@app/db/schemas";
+import { ProjectType, UserSecretType } from "@app/db/schemas";
 import { TPermissionServiceFactory } from "@app/ee/services/permission/permission-service";
-import { encryptSymmetric128BitHexKeyUTF8 } from "@app/lib/crypto";
-import { NotFoundError } from "@app/lib/errors";
+import { BadRequestError } from "@app/lib/errors";
+import { ZDecryptedJSONData } from "@app/server/routes/sanitizedSchemas";
 
+import { TKmsServiceFactory } from "../kms/kms-service";
+import { KmsDataKey } from "../kms/kms-types";
 import { TProjectDALFactory } from "../project/project-dal";
 import { TProjectBotServiceFactory } from "../project-bot/project-bot-service";
-import { TCreateUserSecretDTO, TCreateUserSecretRawDTO } from "./userSecrets.types";
 import { TSecretDALFactory } from "./userSecrets-dal";
+import {
+  TCreateUserSecretDTO,
+  TCreateUserSecretRawDTO,
+  TDeleteBulkUserSecretsDTO,
+  TDeleteUserSecretsRawDTO,
+  TGetUserSecretsRawDTO
+} from "./userSecrets-types";
 
 type TSecretServiceFactoryDep = {
   permissionService: Pick<TPermissionServiceFactory, "getProjectPermission">;
   userSecretsDAL: TSecretDALFactory;
   projectBotService: TProjectBotServiceFactory;
   projectDAL: TProjectDALFactory;
+  kmsService: TKmsServiceFactory;
 };
 
 export type TUserSecretsServiceFactory = ReturnType<typeof userSecretsServiceFactory>;
@@ -20,9 +29,10 @@ export const userSecretsServiceFactory = ({
   permissionService,
   userSecretsDAL,
   projectDAL,
-  projectBotService
+  projectBotService,
+  kmsService
 }: TSecretServiceFactoryDep) => {
-  const createUserSecret = async ({
+  const $createUserSecret = async ({
     actor,
     actorId,
     actorOrgId,
@@ -51,14 +61,41 @@ export const userSecretsServiceFactory = ({
     // );
     await projectDAL.checkProjectUpgradeStatus(projectId);
 
-    const { jsonDataCiphertext, type } = inputSecret;
+    const { jsonDataCiphertext, type, itemName } = inputSecret;
     const secret = await userSecretsDAL.create({
       encryptedJSONData: jsonDataCiphertext,
       type,
-      userId: actorId
+      userId: actorId,
+      itemName
     });
 
     return secret;
+  };
+
+  const $deleteManyUserSecrets = async ({ secretIds, projectId }: TDeleteBulkUserSecretsDTO) => {
+    // TODO: Permissions
+    // const { permission, ForbidOnInvalidProjectType } = await permissionService.getProjectPermission(
+    //   actor,
+    //   actorId,
+    //   projectId,
+    //   actorAuthMethod,
+    //   actorOrgId
+    // );
+    // ForbidOnInvalidProjectType(ProjectType.SecretManager);
+    // ForbiddenError.from(permission).throwUnlessCan(
+    //   ProjectPermissionActions.Delete,
+    //   subject(ProjectPermissionSub.Secrets, { environment, secretPath: path })
+    // );
+
+    await projectDAL.checkProjectUpgradeStatus(projectId);
+
+    const secretsDeleted = await userSecretsDAL.delete({
+      $in: {
+        id: secretIds
+      }
+    });
+
+    return secretsDeleted;
   };
 
   const createUserSecretRaw = async ({
@@ -68,29 +105,130 @@ export const userSecretsServiceFactory = ({
     actorAuthMethod,
     actorOrgId,
     type,
-    jsonData
+    itemName,
+    decryptedJSONData
   }: TCreateUserSecretRawDTO) => {
-    const { botKey } = await projectBotService.getBotKey(projectId);
-    if (!botKey)
-      throw new NotFoundError({
-        message: `Project bot for project with ID '${projectId}' not found. Please upgrade your project.`,
-        name: "bot_not_found_error"
-      });
+    const { encryptor: secretManagerEncryptor } = await kmsService.createCipherPairWithDataKey({
+      type: KmsDataKey.SecretManager, // TODO: Check if we need to have a custom 'Secret Manager' just for UserSecrets
+      projectId
+    });
 
-    const encryptedJSONData = encryptSymmetric128BitHexKeyUTF8(JSON.stringify(jsonData), botKey);
-
-    await createUserSecret({
+    const secret = await $createUserSecret({
       actor,
       actorAuthMethod,
       actorId,
       actorOrgId,
-      jsonDataCiphertext: encryptedJSONData.ciphertext,
+      itemName,
+      jsonDataCiphertext: secretManagerEncryptor({ plainText: Buffer.from(JSON.stringify(decryptedJSONData)) })
+        .cipherTextBlob,
       projectId,
       type
+    });
+    return secret;
+  };
+
+  const getUserSecretsCount = async ({ projectId, actorId }: Pick<TGetUserSecretsRawDTO, "projectId" | "actorId">) => {
+    const { shouldUseSecretV2Bridge } = await projectBotService.getBotKey(projectId);
+
+    if (!shouldUseSecretV2Bridge)
+      throw new BadRequestError({
+        message: "Project version does not support pagination",
+        name: "PaginationNotSupportedError"
+      });
+
+    // TODO: Permissions
+    // const { permission } = await permissionService.getProjectPermission(
+    //   actor,
+    //   actorId,
+    //   projectId,
+    //   actorAuthMethod,
+    //   actorOrgId
+    // );
+    // ForbiddenError.from(permission).throwUnlessCan(ProjectPermissionActions.Read, ProjectPermissionSub.Secrets);
+
+    const count = await userSecretsDAL.countSecrets(actorId);
+
+    return count;
+  };
+
+  const getSecretsRaw = async ({
+    projectId,
+    actorId,
+    orderBy,
+    orderDirection,
+    limit,
+    offset
+  }: TGetUserSecretsRawDTO) => {
+    // TODO: Permissions
+    // const { permission } = await permissionService.getProjectPermission(
+    //   actor,
+    //   actorId,
+    //   projectId,
+    //   actorAuthMethod,
+    //   actorOrgId
+    // );
+    // ForbiddenError.from(permission).throwUnlessCan(ProjectPermissionActions.Read, ProjectPermissionSub.Secrets);
+
+    const secrets = await userSecretsDAL.findSecrets(actorId, {
+      limit,
+      offset,
+      orderBy,
+      orderDirection
+    });
+
+    const { decryptor: secretManagerDecryptor } = await kmsService.createCipherPairWithDataKey({
+      type: KmsDataKey.SecretManager,
+      projectId
+    });
+
+    function decryptJSONData(secret: Awaited<ReturnType<typeof userSecretsDAL.findSecrets>>[number]) {
+      const decryptedJSONDataAsString = secret.encryptedJSONData
+        ? secretManagerDecryptor({ cipherTextBlob: secret.encryptedJSONData }).toString()
+        : "";
+
+      const object = JSON.parse(decryptedJSONDataAsString) as unknown;
+
+      const decryptedJSONData = ZDecryptedJSONData.parse(object);
+
+      return {
+        id: secret.id,
+        itemName: secret.itemName,
+        createdAt: secret.createdAt,
+        updatedAt: secret.updatedAt,
+        type: secret.type as UserSecretType,
+        decryptedJSONData
+      };
+    }
+
+    const decryptedSecrets = secrets.map(decryptJSONData);
+
+    return {
+      secrets: decryptedSecrets
+    };
+  };
+
+  const deleteManyUserSecretsRaw = async ({
+    secretIds,
+    projectId,
+    actor,
+    actorAuthMethod,
+    actorId,
+    actorOrgId
+  }: TDeleteUserSecretsRawDTO) => {
+    await $deleteManyUserSecrets({
+      secretIds,
+      projectId,
+      actor,
+      actorAuthMethod,
+      actorId,
+      actorOrgId
     });
   };
 
   return {
-    createUserSecretRaw
+    getSecretsRaw,
+    deleteManyUserSecretsRaw,
+    createUserSecretRaw,
+    getUserSecretsCount
   };
 };

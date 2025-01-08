@@ -35,6 +35,16 @@ export type TSecretModifiedEvent = {
   };
 };
 
+export type TUserSecretModifiedEvent = {
+  event: PostHogEventTypes.UserSecretCreated;
+  properties: {
+    numberOfSecrets: number;
+    workspaceId: string;
+    channel?: string;
+    userAgent?: string;
+  };
+};
+
 export type TAdminInitEvent = {
   event: PostHogEventTypes.AdminInit;
   properties: {
@@ -123,6 +133,7 @@ export type TTelemetryInstanceStatsEvent = {
 
 export type TPostHogEvent = { distinctId: string } & (
   | TSecretModifiedEvent
+  | TUserSecretModifiedEvent
   | TAdminInitEvent
   | TUserSignedUpEvent
   | TSecretScannerEvent

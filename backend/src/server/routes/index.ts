@@ -218,6 +218,8 @@ import { userDALFactory } from "@app/services/user/user-dal";
 import { userServiceFactory } from "@app/services/user/user-service";
 import { userAliasDALFactory } from "@app/services/user-alias/user-alias-dal";
 import { userEngagementServiceFactory } from "@app/services/user-engagement/user-engagement-service";
+import { userSecretsDALFactory } from "@app/services/user-secrets/userSecrets-dal";
+import { userSecretsServiceFactory } from "@app/services/user-secrets/userSecrets-service";
 import { webhookDALFactory } from "@app/services/webhook/webhook-dal";
 import { webhookServiceFactory } from "@app/services/webhook/webhook-service";
 import { workflowIntegrationDALFactory } from "@app/services/workflow-integration/workflow-integration-dal";
@@ -277,6 +279,7 @@ export const registerRoutes = async (
   const projectBotDAL = projectBotDALFactory(db);
 
   const secretDAL = secretDALFactory(db);
+  const userSecretsDAL = userSecretsDALFactory(db);
   const secretTagDAL = secretTagDALFactory(db);
   const folderDAL = secretFolderDALFactory(db);
   const folderVersionDAL = secretFolderVersionDALFactory(db);
@@ -1031,6 +1034,14 @@ export const registerRoutes = async (
     secretApprovalRequestService
   });
 
+  const userSecretService = userSecretsServiceFactory({
+    permissionService,
+    projectBotService,
+    projectDAL,
+    userSecretsDAL,
+    kmsService
+  });
+
   const secretSharingService = secretSharingServiceFactory({
     permissionService,
     secretSharingDAL,
@@ -1396,6 +1407,7 @@ export const registerRoutes = async (
     projectEnv: projectEnvService,
     projectRole: projectRoleService,
     secret: secretService,
+    userSecrets: userSecretService,
     secretReplication: secretReplicationService,
     secretTag: secretTagService,
     rateLimit: rateLimitService,
