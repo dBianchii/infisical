@@ -75,7 +75,7 @@ const formatDescription = (type: ProjectType) => {
   if (type === ProjectType.KMS)
     return "Centralize the management of keys for cryptographic operations, such as encryption and decryption.";
   if (type === ProjectType.UserSecrets)
-    return "Securely store, manage, and access personal credentials such as website logins, credit card details, secure notes, and more, all tied to your organization";
+    return "Securely store, manage, and access personal credentials such as website logins, credit card details, secure notes, and more";
   return "Generate SSH credentials to provide secure and centralized SSH access control for your infrastructure.";
 };
 
