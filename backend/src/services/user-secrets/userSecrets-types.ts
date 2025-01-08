@@ -14,11 +14,11 @@ type SecureNoteType = {
   content: string;
 };
 
-type UserSecretData = LoginType | CreditCardType | SecureNoteType;
+type UserSecretJSONData = LoginType | CreditCardType | SecureNoteType;
 
 export type TCreateUserSecretRawDTO = TProjectPermission & {
   type: UserSecretType;
-  decryptedJSONData: UserSecretData;
+  decryptedJSONData: UserSecretJSONData;
   itemName: string | undefined;
 };
 
@@ -31,6 +31,18 @@ export type TCreateUserSecretDTO = TProjectPermission & {
 export type TDeleteUserSecretsRawDTO = TProjectPermission & {
   secretIds: string[];
 };
+
+export type TUpdateUserSecretRawDTO = TProjectPermission & {
+  secretId: string;
+  itemName: string;
+  decryptedJSONData: UserSecretJSONData;
+};
+
+export type TUpdateUserSecretDTO = {
+  secretId: string;
+  itemName: string;
+  jsonDataCiphertext: Buffer;
+} & TProjectPermission;
 
 export type TDeleteBulkUserSecretsDTO = {
   secretIds: string[];

@@ -13,7 +13,9 @@ import {
   TCreateUserSecretRawDTO,
   TDeleteBulkUserSecretsDTO,
   TDeleteUserSecretsRawDTO,
-  TGetUserSecretsRawDTO
+  TGetUserSecretsRawDTO,
+  TUpdateUserSecretDTO,
+  TUpdateUserSecretRawDTO
 } from "./userSecrets-types";
 
 type TSecretServiceFactoryDep = {
@@ -96,6 +98,47 @@ export const userSecretsServiceFactory = ({
     });
 
     return secretsDeleted;
+  };
+
+  const $updateSecret = async ({
+    actor,
+    actorId,
+    actorOrgId,
+    actorAuthMethod,
+    projectId,
+    secretId,
+    ...inputSecret
+  }: TUpdateUserSecretDTO) => {
+    const { ForbidOnInvalidProjectType } = await permissionService.getProjectPermission(
+      actor,
+      actorId,
+      projectId,
+      actorAuthMethod,
+      actorOrgId
+    );
+    ForbidOnInvalidProjectType(ProjectType.UserSecrets);
+
+    // TODO: Permissions
+    // ForbiddenError.from(permission).throwUnlessCan(
+    //   ProjectPermissionActions.Edit,
+    //   subject(ProjectPermissionSub.Secrets, {
+    //     environment,
+    //     secretPath,
+    //     secretName: inputSecret.secretName,
+    //     secretTags: secret.tags.map((el) => el.slug)
+    //   })
+    // );
+
+    await userSecretsDAL.update(
+      {
+        userId: actorId,
+        id: secretId
+      },
+      {
+        encryptedJSONData: inputSecret.jsonDataCiphertext,
+        itemName: inputSecret.itemName
+      }
+    );
   };
 
   const createUserSecretRaw = async ({
@@ -225,10 +268,39 @@ export const userSecretsServiceFactory = ({
     });
   };
 
+  const updateUserSecretRaw = async ({
+    actorId,
+    projectId,
+    actor,
+    actorOrgId,
+    actorAuthMethod,
+    decryptedJSONData,
+    itemName,
+    secretId
+  }: TUpdateUserSecretRawDTO) => {
+    const { encryptor: secretManagerEncryptor } = await kmsService.createCipherPairWithDataKey({
+      type: KmsDataKey.SecretManager, // TODO: Check if we need to have a custom 'Secret Manager' just for UserSecrets
+      projectId
+    });
+
+    await $updateSecret({
+      itemName,
+      projectId,
+      actor,
+      actorId,
+      actorOrgId,
+      actorAuthMethod,
+      secretId,
+      jsonDataCiphertext: secretManagerEncryptor({ plainText: Buffer.from(JSON.stringify(decryptedJSONData)) })
+        .cipherTextBlob
+    });
+  };
+
   return {
+    createUserSecretRaw,
+    getUserSecretsCount,
     getSecretsRaw,
     deleteManyUserSecretsRaw,
-    createUserSecretRaw,
-    getUserSecretsCount
+    updateUserSecretRaw
   };
 };

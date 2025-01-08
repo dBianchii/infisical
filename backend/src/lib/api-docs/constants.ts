@@ -746,21 +746,16 @@ export const RAW_SECRETS = {
 
 export const RAW_USER_SECRETS = {
   CREATE: {
-    secretName: "The name of the secret to create.",
-    projectSlug: "The slug of the project to create the secret in.",
-    environment: "The slug of the environment to create the secret in.",
-    secretComment: "Attach a comment to the secret.",
-    secretPath: "The path to create the secret in.",
-    secretValue: "The value of the secret to create.",
-    skipMultilineEncoding: "Skip multiline encoding for the secret value.",
     type: "The type of the secret to create.",
-    workspaceId: "The ID of the project to create the secret in.",
-    tagIds: "The ID of the tags to be attached to the created secret.",
-    secretReminderRepeatDays: "Interval for secret rotation notifications, measured in days.",
-    secretReminderNote: "Note to be attached in notification email."
+    workspaceId: "The ID of the project to create the secret in."
   },
   DELETE: {
     workspaceId: "The ID of the project where the secret(s) is located."
+  },
+  UPDATE: {
+    type: "The type of the secret to create.",
+    workspaceId: "The ID of the project to create the secret in.",
+    secretId: "The secrets's id"
   }
 } as const;
 

@@ -159,4 +159,74 @@ export const registerUserSecretsRouter = async (server: FastifyZodProvider) => {
       // });
     }
   });
+
+  server.route({
+    method: "PATCH",
+    url: "/raw/:secretId",
+    config: {
+      rateLimit: secretsLimit
+    },
+    schema: {
+      description: "Update secret",
+      security: [
+        {
+          bearerAuth: []
+        }
+      ],
+      params: z.object({
+        secretId: z.string().trim().describe(RAW_USER_SECRETS.UPDATE.secretId)
+      }),
+      body: z.object({
+        workspaceId: z.string().trim().describe(RAW_USER_SECRETS.CREATE.workspaceId),
+        decryptedJSONData: ZDecryptedJSONData,
+        itemName: z.string()
+      }),
+      response: {
+        200: z.void()
+      }
+    },
+    onRequest: verifyAuth([AuthMode.JWT, AuthMode.API_KEY, AuthMode.SERVICE_TOKEN, AuthMode.IDENTITY_ACCESS_TOKEN]),
+    handler: async (req) => {
+      await server.services.userSecrets.updateUserSecretRaw({
+        secretId: req.params.secretId,
+        actorId: req.permission.id,
+        actor: req.permission.type,
+        actorOrgId: req.permission.orgId,
+        actorAuthMethod: req.permission.authMethod,
+        itemName: req.body.itemName,
+        projectId: req.body.workspaceId,
+        decryptedJSONData: req.body.decryptedJSONData
+      });
+
+      // TODO: Audit log and posthog
+      // await server.services.auditLog.createAuditLog({
+      //   projectId: req.body.workspaceId,
+      //   ...req.auditLogInfo,
+      //   event: {
+      //     type: EventType.UPDATE_SECRET,
+      //     metadata: {
+      //       environment: req.body.environment,
+      //       secretPath: req.body.secretPath,
+      //       secretId: secret.id,
+      //       secretKey: req.params.secretName,
+      //       secretVersion: secret.version
+      //     }
+      //   }
+      // });
+
+      // await server.services.telemetry.sendPostHogEvents({
+      //   event: PostHogEventTypes.SecretUpdated,
+      //   distinctId: getTelemetryDistinctId(req),
+      //   properties: {
+      //     numberOfSecrets: 1,
+      //     workspaceId: req.body.workspaceId,
+      //     environment: req.body.environment,
+      //     secretPath: req.body.secretPath,
+      //     channel: getUserAgentType(req.headers["user-agent"]),
+      //     ...req.auditLogInfo
+      //   }
+      // });
+      // return { secret };
+    }
+  });
 };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/router";
 import { faArrowDown, faArrowUp, faFolderBlank, faPlus } from "@fortawesome/free-solid-svg-icons";
@@ -80,6 +80,7 @@ export const SecretOverviewPage = () => {
   const { resetSelectedEntries, selectedEntries, toggleSelectedEntry } = useSelectedEntries();
 
   const { currentWorkspace, isLoading: isWorkspaceLoading } = useWorkspace();
+
   const { currentOrg } = useOrganization();
   const workspaceId = currentWorkspace?.id as string;
 
@@ -110,6 +111,14 @@ export const SecretOverviewPage = () => {
     orderBy,
     orderDirection
   });
+
+  const [currentlyEditingUserSecretId, setCurrentlyEditingUserSecretId] = useState<
+    string | undefined
+  >(undefined);
+  const currentlyEditing = useMemo(
+    () => overview?.secrets?.find((s) => s.id === currentlyEditingUserSecretId),
+    [currentlyEditingUserSecretId, overview?.secrets]
+  );
 
   const { secrets, totalSecretCount } = overview ?? {};
   const { handlePopUpOpen, handlePopUpToggle, handlePopUpClose, popUp } = usePopUp([
@@ -295,9 +304,11 @@ export const SecretOverviewPage = () => {
                 {secrets?.map((secret, index) => (
                   <UserSecretOverviewTableRow
                     id={secret.id}
-                    decryptedJSONData={secret.decryptedJSONData}
                     type={secret.type}
-                    onClickRow={() => handlePopUpOpen("editUserSecret")}
+                    onClickRow={() => {
+                      setCurrentlyEditingUserSecretId(secret.id);
+                      handlePopUpOpen("editUserSecret");
+                    }}
                     isSelected={selectedEntries.some((s) => s === secret.id)}
                     onToggleSecretSelect={() => toggleSelectedEntry(secret.id)}
                     key={`overview-${secret}-${index + 1}`}
@@ -336,23 +347,25 @@ export const SecretOverviewPage = () => {
           />
         </ModalContent>
       </Modal>
-      <Modal
-        isOpen={popUp.editUserSecret.isOpen}
-        onOpenChange={(isOpen) => handlePopUpToggle("editUserSecret", isOpen)}
-      >
-        <ModalContent
-          className="max-h-[80vh]"
-          bodyClassName="overflow-visible"
-          title="Create User Secret"
-          subTitle="Create your user secret"
-          onPointerDownOutside={(e) => e.preventDefault()}
+      {currentlyEditing && (
+        <Modal
+          isOpen={popUp.editUserSecret.isOpen}
+          onOpenChange={(isOpen) => handlePopUpToggle("editUserSecret", isOpen)}
         >
-          <EditUserSecretForm
-            onClose={() => handlePopUpClose("editUserSecret")}
-            type={currentUserSecretType}
-          />
-        </ModalContent>
-      </Modal>
+          <ModalContent
+            className="max-h-[80vh]"
+            bodyClassName="overflow-visible"
+            title="Create User Secret"
+            subTitle="Create your user secret"
+            onPointerDownOutside={(e) => e.preventDefault()}
+          >
+            <EditUserSecretForm
+              userSecret={currentlyEditing}
+              onClose={() => handlePopUpClose("editUserSecret")}
+            />
+          </ModalContent>
+        </Modal>
+      )}
     </>
   );
 };
