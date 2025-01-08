@@ -1,8 +1,11 @@
-import { useState } from "react";
 import { Control, Controller, FieldErrors } from "react-hook-form";
+import { usePaymentInputs } from "react-payment-inputs";
+import { CardImages, images } from "react-payment-inputs/images";
+import { faCreditCard } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { z } from "zod";
 
-import { DatePicker, FormControl, Input, SecretInput, TextArea } from "@app/components/v2";
+import { FormControl, Input, TextArea } from "@app/components/v2";
 import { InfisicalSecretInput } from "@app/components/v2/InfisicalSecretInput";
 import {
   ZCardSecretType,
@@ -55,7 +58,8 @@ function LoginFormContent({ control, errors }: FormProps<typeof ZLoginSecretType
 }
 
 function CreditCardFormContent({ control, errors }: FormProps<typeof ZCardSecretType>) {
-  const [open, setOpen] = useState(true);
+  const { meta, getCardNumberProps, getExpiryDateProps, getCVCProps, getCardImageProps } =
+    usePaymentInputs();
 
   return (
     <>
@@ -63,65 +67,83 @@ function CreditCardFormContent({ control, errors }: FormProps<typeof ZCardSecret
         control={control}
         name="cardNumber"
         render={({ field }) => (
-          <FormControl
-            label="Card number"
-            isRequired
-            isError={Boolean(errors?.cardNumber)}
-            errorText={errors?.cardNumber?.message}
-          >
-            {/* TODO: make it a proper Card input  */}
-            <SecretInput
-              maxLength={19}
-              {...field}
-              containerClassName="text-bunker-300 hover:border-primary-400/50 border border-mineshaft-600 bg-mineshaft-900 px-2 py-1.5"
-            />
-          </FormControl>
+          <>
+            <div className="relative ">
+              <Input
+                className={`pe-9 peer  rounded-b-none pl-9 shadow-none [direction:inherit] ${
+                  errors?.cardNumber ? "border-red-500" : ""
+                }`}
+                maxLength={19}
+                {...getCardNumberProps({
+                  onChange: field.onChange
+                })}
+                {...field}
+                placeholder="Card Number"
+                id="card-number"
+              />
+              <div className="end-0 pe-3 text-muted-foreground/80 pointer-events-none absolute inset-y-0 flex items-center justify-center peer-disabled:opacity-50">
+                {meta.cardType ? (
+                  <svg
+                    className="ml-2 mr-2 overflow-hidden rounded-sm"
+                    {...getCardImageProps({ images: images as unknown as CardImages })}
+                    width={20}
+                  />
+                ) : (
+                  <FontAwesomeIcon icon={faCreditCard} className="ml-2 mr-2" />
+                )}
+              </div>
+            </div>
+            {errors?.cardNumber && (
+              <span className="text-sm text-red-500">{errors.cardNumber.message}</span>
+            )}
+          </>
         )}
       />
-      <Controller
-        control={control}
-        name="expiryDate"
-        render={({ field }) => (
-          <FormControl
-            label="Expiry Date"
-            isError={Boolean(errors?.expiryDate)}
-            errorText={errors?.expiryDate?.message}
-            isRequired
-          >
-            <DatePicker
-              showTimePicker={false}
-              value={field.value?.isWellFormed() ? new Date(field.value) : undefined}
-              onChange={(date) => field.onChange(date?.toISOString())}
-              dateFormat="P"
-              popUpProps={{
-                open,
-                onOpenChange: setOpen
-              }}
-              popUpContentProps={{}}
-            />
-          </FormControl>
-        )}
-      />
-      <Controller
-        control={control}
-        name="CVV"
-        render={({ field }) => (
-          <FormControl
-            label="CVV"
-            isRequired
-            isError={Boolean(errors?.CVV)}
-            errorText={errors?.CVV?.message}
-          >
-            {/* TODO: make it a proper CVV input  */}
-            <SecretInput
-              {...field}
-              maxLength={4}
-              itemType="number"
-              containerClassName="text-bunker-300 hover:border-primary-400/50 border border-mineshaft-600 bg-mineshaft-900 px-2 py-1.5"
-            />
-          </FormControl>
-        )}
-      />
+
+      <div className="-mt-px flex">
+        <Controller
+          control={control}
+          name="expiryDate"
+          render={({ field }) => (
+            <div className="min-w-0 flex-1 focus-within:z-10">
+              <Input
+                className={`rounded-e-none rounded-t-none rounded-br-none shadow-none [direction:inherit] ${
+                  errors?.expiryDate ? "border-red-500" : ""
+                }`}
+                {...getExpiryDateProps({
+                  onChange: field.onChange
+                })}
+                value={field.value}
+                placeholder="MM/YY"
+                id="expiry-date"
+              />
+              {errors?.expiryDate && (
+                <span className="text-sm text-red-500">{errors.expiryDate.message}</span>
+              )}
+            </div>
+          )}
+        />
+        <Controller
+          control={control}
+          name="CVV"
+          render={({ field }) => (
+            <div className="-ms-px min-w-0 flex-1 focus-within:z-10">
+              <Input
+                className={`rounded-s-none rounded-t-none rounded-bl-none shadow-none [direction:inherit] ${
+                  errors?.CVV ? "border-red-500" : ""
+                }`}
+                {...getCVCProps({
+                  onChange: field.onChange // Hook into react-hook-form
+                })}
+                value={field.value}
+                placeholder="CVC"
+                id="cvc"
+              />
+              {errors?.CVV && <span className="text-sm text-red-500">{errors.CVV.message}</span>}
+            </div>
+          )}
+        />
+      </div>
     </>
   );
 }

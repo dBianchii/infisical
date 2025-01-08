@@ -26,9 +26,7 @@ export const ZCardSecretType = z.object({
     .regex(/^\d+$/, "Card number must contain only numbers")
     .regex(/^\d{13,19}$/, "Card number must be between 13 to 19 digits")
     .refine(luhnCheck, "Card number is invalid"),
-  expiryDate: z
-    .string()
-    .refine((date) => new Date(date) > new Date(), "Expiry date must be in the future"),
+  expiryDate: z.string(),
   CVV: z.string().regex(/^\d{3,4}$/, "CVV must be 3 or 4 digits")
 });
 
