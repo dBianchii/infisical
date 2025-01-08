@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { format } from "date-fns";
 import { twMerge } from "tailwind-merge";
 
 import { Checkbox, Td, Tr } from "@app/components/v2";
@@ -10,8 +11,8 @@ type Props = {
   id: string;
   itemName?: string;
   type: UserSecretType;
-  // decryptedJSONData: Record<string, unknown>;
   isSelected: boolean;
+  updatedAt: string;
   onToggleSecretSelect: (key: string) => void;
   onClickRow: () => void;
 };
@@ -20,11 +21,17 @@ export const UserSecretOverviewTableRow = ({
   id,
   itemName,
   type,
-  // decryptedJSONData,
+  updatedAt,
   isSelected,
   onToggleSecretSelect,
   onClickRow
 }: Props) => {
+  const userSecretTypeToTextMap = {
+    [UserSecretType.Login]: "Login",
+    [UserSecretType.CreditCard]: "Credit Card",
+    [UserSecretType.SecureNote]: "Secure Note"
+  };
+
   return (
     <Tr isHoverable isSelectable onClick={onClickRow} className="group">
       <Td className="sticky left-0 z-10 bg-mineshaft-800 bg-clip-padding py-0 px-0 group-hover:bg-mineshaft-700">
@@ -51,6 +58,8 @@ export const UserSecretOverviewTableRow = ({
           </div>
         </div>
       </Td>
+      <Td>{userSecretTypeToTextMap[type]}</Td>
+      <Td>{format(new Date(updatedAt), "Pp")}</Td>
     </Tr>
   );
 };

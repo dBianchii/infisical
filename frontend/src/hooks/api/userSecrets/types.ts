@@ -34,4 +34,5 @@ export type UserSecretRaw = {
   type: UserSecretType;
   decryptedJSONData: DecryptedJSONData;
   itemName: string;
+  updatedAt: string;
 };

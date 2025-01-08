@@ -66,14 +66,6 @@ export const registerUserSecretsDashboardRouter = async (server: FastifyZodProvi
       // prevent older projects from accessing endpoint
       if (!shouldUseSecretV2Bridge) throw new BadRequestError({ message: "Project version not supported" });
 
-      // const { permission } = await server.services.permission.getProjectPermission(
-      //   req.permission.type,
-      //   req.permission.id,
-      //   projectId,
-      //   req.permission.authMethod,
-      //   req.permission.orgId
-      // );
-
       const totalSecretCount = await server.services.userSecrets.getUserSecretsCount({
         actorId: req.permission.id,
         projectId

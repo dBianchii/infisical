@@ -367,7 +367,7 @@ export const AppLayout = ({ children }: LayoutProps) => {
                             isSelected={router.asPath.includes(
                               `/${ProjectType.UserSecrets}/overview`
                             )}
-                            icon="system-outline-165-view-carousel"
+                            icon="system-outline-22-user-secret"
                           >
                             User Secrets
                           </MenuItem>

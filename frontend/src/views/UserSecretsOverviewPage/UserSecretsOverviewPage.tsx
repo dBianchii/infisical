@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavHeader from "@app/components/navigation/NavHeader";
 import {
   Button,
+  Checkbox,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -70,7 +71,7 @@ const useSelectedEntries = () => {
     };
   }, []);
 
-  return { selectedEntries, toggleSelectedEntry, resetSelectedEntries };
+  return { selectedEntries, toggleSelectedEntry, resetSelectedEntries, setSelectedEntries };
 };
 export const SecretOverviewPage = () => {
   const { t } = useTranslation();
@@ -78,7 +79,8 @@ export const SecretOverviewPage = () => {
   const router = useRouter();
   // const [scrollOffset, setScrollOffset] = useState(0);
   const [currentUserSecretType, setCurrentUserSecretType] = useState(UserSecretType.Login);
-  const { resetSelectedEntries, selectedEntries, toggleSelectedEntry } = useSelectedEntries();
+  const { resetSelectedEntries, selectedEntries, toggleSelectedEntry, setSelectedEntries } =
+    useSelectedEntries();
 
   const { currentWorkspace, isLoading: isWorkspaceLoading } = useWorkspace();
 
@@ -125,6 +127,33 @@ export const SecretOverviewPage = () => {
     "editUserSecret"
   ] as const);
 
+  const toggleSelectAllRows = () => {
+    if (!secrets || secrets.length === 0) return;
+    const allSelected = secrets.every((secret) => selectedEntries.includes(secret.id));
+    if (allSelected) {
+      const newSelectedEntries = selectedEntries.filter(
+        (entry) => !secrets.some((secret) => secret.id === entry)
+      );
+      setSelectedEntries(newSelectedEntries);
+      return;
+    }
+    const newSelectedEntries = [
+      ...new Set([...selectedEntries, ...secrets.map((secret) => secret.id)])
+    ];
+    setSelectedEntries(newSelectedEntries);
+  };
+
+  const allRowsSelectedOnPage = useMemo(() => {
+    if (!secrets?.length) return { isChecked: false, isIndeterminate: false };
+    const allSelected = secrets.every((secret) => selectedEntries.includes(secret.id));
+    const someSelected = secrets.some((secret) => selectedEntries.includes(secret.id));
+
+    if (allSelected) return { isChecked: true, isIndeterminate: false };
+    if (someSelected) return { isChecked: true, isIndeterminate: true };
+
+    return { isChecked: false, isIndeterminate: false };
+  }, [secrets, selectedEntries]);
+
   if (isWorkspaceLoading) {
     return (
       <div className="container mx-auto flex h-screen w-full items-center justify-center px-8 text-mineshaft-50 dark:[color-scheme:dark]">
@@ -144,6 +173,7 @@ export const SecretOverviewPage = () => {
   // const combinedKeys = [...secKeys, ...secretImports.map((impSecrets) => impSecrets?.data?.map((impSec) => impSec.secrets?.map((impSecKey) => impSecKey.key))).flat().flat()];
 
   const isTableEmpty = totalSecretCount === 0;
+  console.log(secrets);
 
   return (
     <>
@@ -243,13 +273,13 @@ export const SecretOverviewPage = () => {
                         content="all folders and secrets on page"
                       >
                         <div className="mr-4 ml-2">
-                          {/* <Checkbox
-                            isDisabled={totalCount === 0}
+                          <Checkbox
+                            isDisabled={totalSecretCount === 0}
                             id="checkbox-select-all-rows"
                             isChecked={allRowsSelectedOnPage.isChecked}
                             isIndeterminate={allRowsSelectedOnPage.isIndeterminate}
-                            onCheckedChange={() => {}}
-                          /> */}
+                            onCheckedChange={toggleSelectAllRows}
+                          />
                         </div>
                       </Tooltip>
                       Name
@@ -271,6 +301,8 @@ export const SecretOverviewPage = () => {
                       </IconButton>
                     </div>
                   </Th>
+                  <Th>Type</Th>
+                  <Th>Updated at</Th>
                 </Tr>
               </THead>
               <TBody>
@@ -305,6 +337,8 @@ export const SecretOverviewPage = () => {
                 )}
                 {secrets?.map((secret, index) => (
                   <UserSecretOverviewTableRow
+                    // asdas={secret.}
+                    updatedAt={secret.updatedAt}
                     id={secret.id}
                     type={secret.type}
                     onClickRow={() => {
