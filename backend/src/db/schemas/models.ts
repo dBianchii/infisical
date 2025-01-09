@@ -48,6 +48,7 @@ export enum TableName {
   ProjectKeys = "project_keys",
   ProjectTemplates = "project_templates",
   Secret = "secrets",
+  UserSecrets = "user_secrets",
   SecretReference = "secret_references",
   SecretSharing = "secret_sharing",
   SecretBlindIndex = "secret_blind_indexes",
@@ -185,6 +186,12 @@ export enum SecretType {
   Personal = "personal"
 }
 
+export enum UserSecretType {
+  Login = "login",
+  CreditCard = "credit-card",
+  SecureNote = "secure-note"
+}
+
 export enum ProjectVersion {
   V1 = 1,
   V2 = 2,
@@ -212,5 +219,6 @@ export enum ProjectType {
   SecretManager = "secret-manager",
   CertificateManager = "cert-manager",
   KMS = "kms",
-  SSH = "ssh"
+  SSH = "ssh",
+  UserSecrets = "user-secrets"
 }

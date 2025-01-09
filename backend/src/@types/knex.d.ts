@@ -354,6 +354,9 @@ import {
   TUserGroupMembershipInsert,
   TUserGroupMembershipUpdate,
   TUsers,
+  TUserSecrets,
+  TUserSecretsInsert,
+  TUserSecretsUpdate,
   TUsersInsert,
   TUsersUpdate,
   TWebhooks,
@@ -547,6 +550,7 @@ declare module "knex/types/tables" {
     >;
     [TableName.ProjectKeys]: KnexOriginal.CompositeTableType<TProjectKeys, TProjectKeysInsert, TProjectKeysUpdate>;
     [TableName.Secret]: KnexOriginal.CompositeTableType<TSecrets, TSecretsInsert, TSecretsUpdate>;
+    [TableName.UserSecrets]: KnexOriginal.CompositeTableType<TUserSecrets, TUserSecretsInsert, TUserSecretsUpdate>;
     [TableName.SecretReference]: KnexOriginal.CompositeTableType<
       TSecretReferences,
       TSecretReferencesInsert,

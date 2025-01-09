@@ -7,6 +7,7 @@ import {
   ProjectRolesSchema,
   ProjectsSchema,
   SecretApprovalPoliciesSchema,
+  UserSecretType,
   UsersSchema
 } from "@app/db/schemas";
 import { ProjectPermissionActions, ProjectPermissionSub } from "@app/ee/services/permission/project-permission";
@@ -111,6 +112,29 @@ export const secretRawSchema = z.object({
   secretReminderRepeatDays: z.number().nullable().optional(),
   skipMultilineEncoding: z.boolean().default(false).nullable().optional(),
   metadata: z.unknown().nullable().optional(),
+  createdAt: z.date(),
+  updatedAt: z.date()
+});
+
+const ZLoginSecretType = z.object({
+  userName: z.string(),
+  password: z.string()
+});
+const ZCardSecretType = z.object({
+  cardNumber: z.string(),
+  expiryDate: z.string(),
+  CVV: z.string()
+});
+const ZSecureNoteSecretType = z.object({
+  content: z.string()
+});
+export const ZDecryptedJSONData = z.union([ZLoginSecretType, ZCardSecretType, ZSecureNoteSecretType]);
+
+export const userSecretRawSchema = z.object({
+  id: z.string(),
+  decryptedJSONData: ZDecryptedJSONData,
+  itemName: z.string(),
+  type: z.nativeEnum(UserSecretType),
   createdAt: z.date(),
   updatedAt: z.date()
 });

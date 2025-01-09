@@ -2,6 +2,7 @@ export enum PostHogEventTypes {
   SecretPush = "secrets pushed",
   SecretPulled = "secrets pulled",
   SecretCreated = "secrets added",
+  UserSecretCreated = "user secrets added",
   SecretUpdated = "secrets modified",
   SecretDeleted = "secrets deleted",
   AdminInit = "admin initialization",
@@ -29,6 +30,16 @@ export type TSecretModifiedEvent = {
     environment: string;
     workspaceId: string;
     secretPath: string;
+    channel?: string;
+    userAgent?: string;
+  };
+};
+
+export type TUserSecretModifiedEvent = {
+  event: PostHogEventTypes.UserSecretCreated;
+  properties: {
+    numberOfSecrets: number;
+    workspaceId: string;
     channel?: string;
     userAgent?: string;
   };
@@ -122,6 +133,7 @@ export type TTelemetryInstanceStatsEvent = {
 
 export type TPostHogEvent = { distinctId: string } & (
   | TSecretModifiedEvent
+  | TUserSecretModifiedEvent
   | TAdminInitEvent
   | TUserSignedUpEvent
   | TSecretScannerEvent

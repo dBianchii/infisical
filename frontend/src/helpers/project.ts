@@ -73,6 +73,10 @@ export const getProjectHomePage = (workspace: Workspace) => {
     return `/${workspace.type}/${workspace.id}/kms`;
   }
 
+  if (workspace.type === ProjectType.UserSecrets) {
+    return `/${workspace.type}/${workspace.id}/secrets/overview`;
+  }
+
   return `/${workspace.type}/${workspace.id}/ssh`;
 };
 
@@ -81,7 +85,8 @@ export const getProjectTitle = (type: ProjectType) => {
     [ProjectType.SecretManager]: "Secret Management",
     [ProjectType.KMS]: "Key Management",
     [ProjectType.CertificateManager]: "Cert Management",
-    [ProjectType.SSH]: "SSH"
+    [ProjectType.SSH]: "SSH",
+    [ProjectType.UserSecrets]: "User Secrets"
   };
   return titleConvert[type];
 };

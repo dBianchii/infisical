@@ -744,6 +744,21 @@ export const RAW_SECRETS = {
   }
 } as const;
 
+export const RAW_USER_SECRETS = {
+  CREATE: {
+    type: "The type of the secret to create.",
+    workspaceId: "The ID of the project to create the secret in."
+  },
+  DELETE: {
+    workspaceId: "The ID of the project where the secret(s) is located."
+  },
+  UPDATE: {
+    type: "The type of the secret to create.",
+    workspaceId: "The ID of the project to create the secret in.",
+    secretId: "The secrets's id"
+  }
+} as const;
+
 export const SECRET_IMPORTS = {
   LIST: {
     workspaceId: "The ID of the project to list secret imports from.",
@@ -812,6 +827,17 @@ export const DASHBOARD = {
     includeFolders: "Whether to include project folders in the response.",
     includeImports: "Whether to include project secret imports in the response.",
     includeDynamicSecrets: "Whether to include dynamic project secrets in the response."
+  }
+} as const;
+
+export const USER_SECRETS_DASHBOARD = {
+  SECRET_OVERVIEW_LIST: {
+    projectId: "The ID of the project to list secrets/folders from.",
+    offset: "The offset to start from. If you enter 10, it will start from the 10th secret/folder.",
+    limit: "The number of secrets/folders to return.",
+    orderBy: "The column to order secrets/folders by.",
+    orderDirection: "The direction to order secrets/folders in.",
+    includeSecrets: "Whether to include project secrets in the response."
   }
 } as const;
 

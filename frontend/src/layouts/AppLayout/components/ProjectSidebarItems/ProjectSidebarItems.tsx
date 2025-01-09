@@ -34,6 +34,8 @@ export const ProjectSidebarItem = () => {
   const isCertManager = currentWorkspace?.type === ProjectType.CertificateManager;
   const isCmek = currentWorkspace?.type === ProjectType.KMS;
   const isSsh = currentWorkspace?.type === ProjectType.SSH;
+  const isUserSecrets = currentWorkspace?.type === ProjectType.UserSecrets;
+  const isNOTUserSecrets = !isUserSecrets;
 
   return (
     <Menu>
@@ -50,6 +52,24 @@ export const ProjectSidebarItem = () => {
               icon="system-outline-90-lock-closed"
             >
               {t("nav.menu.secrets")}
+            </MenuItem>
+          </a>
+        </Link>
+      )}
+      {isUserSecrets && (
+        <Link
+          href={`/${ProjectType.UserSecrets}/${currentWorkspace?.id}/secrets/overview`}
+          passHref
+        >
+          <a>
+            <MenuItem
+              isSelected={
+                router.asPath ===
+                `/${ProjectType.UserSecrets}/${currentWorkspace?.id}/secrets/overview`
+              }
+              icon="system-outline-90-lock-closed"
+            >
+              Overview
             </MenuItem>
           </a>
         </Link>
@@ -96,16 +116,18 @@ export const ProjectSidebarItem = () => {
           </a>
         </Link>
       )}
-      <Link href={`/${currentWorkspace.type}/${currentWorkspace?.id}/members`} passHref>
-        <a>
-          <MenuItem
-            isSelected={router.asPath.endsWith(`/${currentWorkspace?.id}/members`)}
-            icon="system-outline-96-groups"
-          >
-            Access Control
-          </MenuItem>
-        </a>
-      </Link>
+      {isNOTUserSecrets && (
+        <Link href={`/${currentWorkspace.type}/${currentWorkspace?.id}/members`} passHref>
+          <a>
+            <MenuItem
+              isSelected={router.asPath.endsWith(`/${currentWorkspace?.id}/members`)}
+              icon="system-outline-96-groups"
+            >
+              Access Control
+            </MenuItem>
+          </a>
+        </Link>
+      )}
       {isSecretManager && (
         <Link href={`/integrations/${currentWorkspace?.id}`} passHref>
           <a>
