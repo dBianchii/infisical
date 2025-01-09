@@ -14,7 +14,7 @@ export const UserSecretsSchema = z.object({
   itemName: z.string(),
   type: z.string().default("login"),
   encryptedJSONData: zodBuffer,
-  userId: z.string().uuid().nullable().optional(),
+  userId: z.string().uuid(),
   projectId: z.string(),
   createdAt: z.date(),
   updatedAt: z.date()
